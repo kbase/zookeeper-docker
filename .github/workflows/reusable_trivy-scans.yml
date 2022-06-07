@@ -27,10 +27,12 @@ jobs:
         run: |
           set -e
           for cve in CVE-2021-4104 CVE-2021-44228 CVE-2021-45046 CVE-2022-22965 ; do
-          	if grep -c $cve $LOG > 0;
+          	if grep -c $cve trivy-results.tbl > 0;
           	  then
           	    echo "Found log4j error: $cve"
           	    exit 2
+            else
+              echo "Did not find core log4j errors, yay!"
           	fi
           done
 
@@ -47,3 +49,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        
