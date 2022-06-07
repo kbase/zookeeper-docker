@@ -1,4 +1,4 @@
-FROM zookeeper:3.4.9
+FROM zookeeper:3.5.9
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
