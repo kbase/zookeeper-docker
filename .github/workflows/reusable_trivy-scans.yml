@@ -1,0 +1,49 @@
+---
+name: Run Trivy Scans
+on:
+  workflow_call:
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out GitHub Repo
+        uses: actions/checkout@v2
+
+      - name: Build an image from Dockerfile
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE;
+          docker build -t trivy-test .
+
+      - name: Run Trivy vulnerability scanner - v0.2.1
+        uses: aquasecurity/trivy-action@0.2.1
+        with:
+          image-ref: 'trivy-test'
+          format: 'table'
+          output: 'trivy-results.tbl'
+          timeout: '20m0s'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Check for log4j CVEs
+        run: |
+          set -e
+          for cve in CVE-2021-4104 CVE-2021-44228 CVE-2021-45046 CVE-2022-22965 ; do
+          	if grep -c $cve $LOG > 0;
+          	  then
+          	    echo "Found log4j error: $cve"
+          	    exit 2
+          	fi
+          done
+
+      - name: Run Trivy vulnerability scanner - Latest
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'trivy-test'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          timeout: '20m0s'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
