@@ -31,6 +31,8 @@ jobs:
           	  then
           	    echo "Found log4j error: $cve"
           	    exit 2
+            else
+              echo "Did not find core log4j errors, yay!"
           	fi
           done
 
